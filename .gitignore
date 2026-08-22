@@ -1,0 +1,32 @@
+# 构建产物
+build/
+app/build/
+.gradle/
+local.properties
+*.apk
+*.aab
+*.jks
+*.keystore
+keystore.properties
+
+# 内嵌运行时是**从 web 仓同步生成**的副本，不进版本库（单一真源在 time-logger）
+app/src/main/assets/app/
+
+# 生成的版本锚点
+app/version.properties
+
+# 隐私：导出的真实记录 / 真实截图一律不得进仓
+*.json
+!app/src/main/res/**/*.json
+timelog-*.json
+*.png
+!app/src/main/res/**/*.png
+*.jpg
+*.jpeg
+*.webp
+*.mp4
+
+# 编辑器
+.idea/
+*.iml
+.DS_Store

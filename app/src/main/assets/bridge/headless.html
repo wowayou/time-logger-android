@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>time-logger bridge</title>
+<!--
+  无界面桥页：给原生入口（小组件 / 磁贴 / 通知）提供一个能跑**真实** web 模块的
+  执行环境。它与主界面同源（同一个虚拟 https 源），因此共享同一份 localStorage 桥、
+  也就是同一份原生存储。这里不渲染任何东西，也不引入 index.html。
+
+  桥自己显式引一次 store_shim.js：一键写入是关键路径，不能依赖
+  WebViewFeature.DOCUMENT_START_SCRIPT 是否可用。shim 幂等，重复执行无害。
+-->
+<script src="store_shim.js"></script>
+</head>
+<body>
+<script type="module">
+  import * as bridge from './quick_write.js';
+  window.__tlBridge = bridge;
+  window.__tlBridgeReady = true;
+  try {
+    if (window.__tlNative && window.__tlNative.onBridgeReady) window.__tlNative.onBridgeReady();
+  } catch (e) { /* 原生宿主不在时（浏览器调试）忽略 */ }
+</script>
+</body>
+</html>

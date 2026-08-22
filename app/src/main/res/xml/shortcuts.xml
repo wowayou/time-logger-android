@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 静态快捷方式只放「打开记录表单」；按标签的一键快捷方式是**动态**的
+     （ShortcutSync 按镜像里的建议标签生成），因为标签是用户数据。 -->
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="log"
+        android:enabled="true"
+        android:icon="@drawable/ic_stat_timelogger"
+        android:shortcutShortLabel="@string/shortcut_log_short"
+        android:shortcutLongLabel="@string/shortcut_log_long">
+        <intent
+            android:action="org.eigentime.timelogger.action.OPEN_FORM"
+            android:targetPackage="org.eigentime.timelogger"
+            android:targetClass="org.eigentime.timelogger.MainActivity">
+        </intent>
+    </shortcut>
+</shortcuts>

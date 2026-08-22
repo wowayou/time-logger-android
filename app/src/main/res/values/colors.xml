@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 与 web 运行时的令牌保持一致：暗色 bg=#0e0f13 / card=#16181f，
+         亮色 bg=#eceef3。图标底色用 icon.svg 里的 #0d0d14。 -->
+    <color name="bg_dark">#0e0f13</color>
+    <color name="bg_light">#eceef3</color>
+    <color name="card_dark">#16181f</color>
+    <color name="text_dark">#e8eaf0</color>
+    <color name="text_light">#1b1d24</color>
+    <color name="accent">#7a6df0</color>
+    <color name="accent_soft">#a99fff</color>
+    <color name="icon_bg">#0d0d14</color>
+    <color name="scrim">#99000000</color>
+</resources>

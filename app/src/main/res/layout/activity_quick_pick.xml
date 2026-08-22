@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 磁贴 / 通知的二级选择：从任何界面下拉两下就能记一条。刻意做成大号触控行，
+     不是列表——项目只有 4–6 个建议标签，滚动列表没有意义。 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/sheet_bg"
+    android:padding="20dp">
+
+    <TextView
+        android:id="@+id/p_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/pick_title"
+        android:textColor="@color/text_dark"
+        android:textSize="18sp" />
+
+    <TextView
+        android:id="@+id/p_status"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:textColor="#8b90a0"
+        android:textSize="13sp" />
+
+    <LinearLayout
+        android:id="@+id/p_tags"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:orientation="vertical" />
+
+    <TextView
+        android:id="@+id/p_open"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="18dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="12dp"
+        android:gravity="center"
+        android:text="@string/pick_open_app"
+        android:textColor="@color/accent_soft"
+        android:textSize="15sp" />
+</LinearLayout>

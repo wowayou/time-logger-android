@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 只有一个容器：WebView 由 MainActivity 用 WebRuntime.create 装配后塞进来，
+     这样主界面与无界面桥页共用同一套 WebView 配置，不会各配一份而漂移。 -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_dark" />
