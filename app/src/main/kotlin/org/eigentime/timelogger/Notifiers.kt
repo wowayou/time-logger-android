@@ -88,7 +88,14 @@ object OngoingNotifier {
                     PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                 )
             )
-        // 系统只展示前 3 个动作：两个最常用标签 + 直接回复。
+        // 展开态放标签网格：系统只给 3 个 action 位，标签塞在 action 里必然放不下
+        // （真机反馈：「没办法选更多的标签」）。自定义视图里的按钮不受这个限制，
+        // DecoratedCustomViewStyle 会把它套进系统模板，Android 12+ 亦然。
+        if (tags.size > 2) {
+            builder.setStyle(NotificationCompat.DecoratedCustomViewStyle())
+            builder.setCustomBigContentView(tagGrid(context, mirror))
+        }
+        // 折叠态仍然只有 3 个动作：两个最常用标签 + 直接回复。
         tags.take(2).forEachIndexed { index, tag ->
             builder.addAction(
                 NotificationCompat.Action.Builder(0, tag, broadcast(context, Actions.WRITE, 700 + index, tag)).build()
@@ -111,6 +118,33 @@ object OngoingNotifier {
         } catch (e: SecurityException) {
             // 权限被撤销时静默退出：这是入口，不是数据。
         }
+    }
+
+    private val GRID_SLOTS = intArrayOf(
+        R.id.n_tag0, R.id.n_tag1, R.id.n_tag2, R.id.n_tag3, R.id.n_tag4, R.id.n_tag5
+    )
+
+    /** 展开态的标签网格。只读镜像里的建议标签（契约 §6），呈现而已。 */
+    private fun tagGrid(context: Context, mirror: Mirror): android.widget.RemoteViews {
+        val views = android.widget.RemoteViews(context.packageName, R.layout.notif_tags)
+        views.setTextViewText(R.id.n_hint, mirror.statusLine(context))
+        val tags = mirror.suggestTags
+        GRID_SLOTS.forEachIndexed { index, id ->
+            val tag = tags.getOrNull(index)
+            if (tag == null) {
+                views.setViewVisibility(id, android.view.View.INVISIBLE)
+                views.setOnClickPendingIntent(id, null)
+            } else {
+                views.setViewVisibility(id, android.view.View.VISIBLE)
+                views.setTextViewText(id, tag)
+                views.setOnClickPendingIntent(id, broadcast(context, Actions.WRITE, 730 + index, tag))
+            }
+        }
+        views.setViewVisibility(
+            R.id.n_row2,
+            if (tags.size > 3) android.view.View.VISIBLE else android.view.View.GONE
+        )
+        return views
     }
 
     fun cancel(context: Context) {

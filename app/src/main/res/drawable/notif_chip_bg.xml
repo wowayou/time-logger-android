@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 通知面板底色由系统给（亮色/暗色都可能），所以用半透明描边 + 极淡填充，
+     两种主题下都看得见，不与系统模板打架。 -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="#14808080" />
+    <corners android:radius="12dp" />
+    <stroke android:width="1dp" android:color="#33808080" />
+</shape>
