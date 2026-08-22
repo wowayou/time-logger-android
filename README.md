@@ -1,4 +1,4 @@
-# 时间尺 · Android 壳（time-logger-android）
+# 时间尺 / Eigentime · Android 壳（time-logger-android）
 
 时间尺（[wowayou/time-logger](https://github.com/wowayou/time-logger)）的安卓原生载体。
 存在的**唯一理由**是降低记录阻力：把「记一条」从「解锁 → 找图标 → 等启动 → 点 FAB →

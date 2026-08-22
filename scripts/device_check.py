@@ -203,7 +203,10 @@ def main() -> int:
     d.write_store("timelog.v1", json.dumps(reply_seed, ensure_ascii=False))
     d.sh("am", "start", "-a", "org.eigentime.timelogger.action.WRITE",
          "-n", f"{PKG}/org.eigentime.timelogger.QuickWriteActivity",
-         "--es", "tag", "当前主线", "--es", "what", "#睡觉 补了个午觉")
+         # 值必须**为设备端的 shell** 加引号：adb 会把命令行在设备上重新解析，
+         # 空格会把它拆成两段，而 `#` 在 sh 里还是注释起点——整句会被吃掉。
+         # （这是本仓第三次踩同一个坑，前两次是播种用的 sh -c 与 base64 管道。）
+         "--es", "tag", "'当前主线'", "--es", "what", "'#睡觉 补了个午觉'")
     time.sleep(9)
     after_reply = d.read_store("timelog.v1")
     if after_reply:

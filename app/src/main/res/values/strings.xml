@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Time Logger</string>
-    <string name="widget_label">Time Logger · one tap</string>
+    <string name="app_name">Eigentime</string>
+    <string name="widget_label">Eigentime · one tap</string>
     <string name="widget_description">Tap a tag to label the time since your last entry</string>
 
     <string name="status_since">%1$s since last entry</string>

@@ -31,7 +31,10 @@
    也不得为阻止免费流通做许可校验或联网激活（AGPL + web 仓 D28）。金钱入口只能是
    网站上的自愿支持，且必须写明「不购买任何东西」。应用内、README、商店文案三处的
    「开源 + 免费」声明不得删除或弱化；应用内不放支付界面。
-9. 版本号只能从 web 版本派生（`sync_runtime.py` 写 `app/version.properties`），
+9. **发版必须走仪式**：sync → 自测 → `bundleRelease` → tag `a<web版本>.<revision>` →
+   push tags → GitHub Release **并附 APK**（免费构建随手可得是 D28 的承诺，不是可选项）。
+   步骤见 `docs/release-checklist.md` §5.6。
+10. 版本号只能从 web 版本派生（`sync_runtime.py` 写 `app/version.properties`），
    不手写 `versionCode` / `versionName`。
 
 ## 目录边界
@@ -70,5 +73,7 @@ git status --short   # 不许出现 assets/app/、*.apk、keystore、真实备�
   热进程 0.1 秒、冷进程 0.55 秒完成一次记录。详见 `docs/device-acceptance.md`。
 - 分发：当前自用侧载（debug 签名）。计划以 $1 上 Google Play，清单见
   `docs/release-checklist.md`；决策见 web 仓 D27。
-- 上架前还欠：隐私政策页补一节「Android 应用」（web 仓 `site/`）、release 上传密钥、
-  商店资产（必须用合成 demo 数据）、通知动作按钮的真机点击验证。
+- 上架前还欠：release 上传密钥、商店资产（必须用合成 demo 数据）、网站支持页。
+  隐私政策的「Android 应用」一节已写入 web 仓 `site/`（待发布一次生效）。
+- 英文名统一为 **Eigentime**（web 仓 D29）；中文名 **时间尺**。包名 `org.eigentime.timelogger`
+  上架后不可改。

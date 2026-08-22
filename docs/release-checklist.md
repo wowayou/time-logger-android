@@ -75,7 +75,12 @@ keyPassword=...
 
 ## 4. 商店文案草案
 
-**应用名**：时间尺 / Time Logger
+**应用名（按语言分别设置，Play 支持逐语言标题，上限 30 字符）**：
+- `zh-CN`：**时间尺**
+- `en-US`：**Eigentime**（不要用 "Time Logger"——通用词，搜不到、也正是 Apple 自己的
+  命名指南明确劝退的那种；描述性文字放简短描述里，标题里放品牌）
+- 决策与理由见 web 仓 D29；包名 `org.eigentime.timelogger` **保持不变**（反向域名、
+  用户看不见、上架后不可改，没有churn 的收益）
 **简短描述（80 字符内）**：5 秒记下真实做了什么，本地离线，一天看清时间去哪了。
 
 **完整描述（第一段就是诚实声明）**：
@@ -116,6 +121,20 @@ python3 scripts/device_check.py --serial <设备>   # release 包也要过一遍
 - [ ] **网站支持页**（一次性金额；写明不购买任何东西）——页面上线后再把应用内那一行指过去
 - [ ] release 上传密钥（离机备份）
 - [ ] 商店资产（512 图标、1024×500 特征图、≥2 张截图，**必须合成 demo 数据**）
+
+## 5.6 发版仪式（与 web 仓对齐）
+
+安卓仓此前没有 tag 与 release 流程，版本锚点全靠 `android_revision.txt` + 同步脚本，
+改错了不会有任何检查发红——这是当前最脆的一环。固定流程：
+
+1. `python3 scripts/sync_runtime.py`（把上游版本与 commit 写进 `app/version.properties`）
+2. 跑满自测（§5 那一串）
+3. `./gradlew bundleRelease assembleRelease`
+4. 打 tag：`git tag a<web版本>.<revision>`（例如 `a93.1`，与 web 仓的 `v93` 区分开）
+5. `git push origin main --tags`
+6. 建 GitHub Release，标题同 tag，**附上 `app-release.apk`**——这就是「免费构建随手可得」
+   那句承诺的兑现方式（D28）
+7. Release notes 三段：用户影响、内部治理、验证结果；不贴真实数据或截图
 
 ## 6. 明确不做
 
