@@ -222,6 +222,35 @@ function opts(now) { return { nowTs: TODAY + 'T' + now, todayKey: TODAY }; }
   check('T13 数据未变', mem.get('timelog.v1') === before);
 }
 
+// ---- T14 通知直接回复：文本里的 #标签 优先，且 token 从 what 里去掉 -----------
+{
+  seed([real(TODAY + 'T09:00', '写代码', '当前主线'), placeholder(TODAY + 'T10:00')]);
+  const out = bridge.quickWrite('当前主线', Object.assign(opts('10:30'), { what: '#刷手机 刷了会儿新闻' }));
+  check('T14 写入成功', out.ok, JSON.stringify(out));
+  check('T14 采用文本里的标签而不是通知携带的', out.tag === '刷手机', out.tag);
+  const filled = at(TODAY + 'T10:00');
+  check('T14 token 已从 what 里去掉', filled && filled.what === '刷了会儿新闻', filled && filled.what);
+}
+
+// ---- T15 认不出的 #xxx 原样留在文本里，标签退回通知携带的那个 ----------------
+{
+  seed([real(TODAY + 'T09:00', '写代码', '当前主线'), placeholder(TODAY + 'T10:00')]);
+  const out = bridge.quickWrite('睡觉', Object.assign(opts('10:30'), { what: '#1 优先级的事' }));
+  check('T15 写入成功', out.ok, JSON.stringify(out));
+  check('T15 标签仍是通知携带的', out.tag === '睡觉', out.tag);
+  const filled = at(TODAY + 'T10:00');
+  check('T15 用户打的字一个都没丢', filled && filled.what === '#1 优先级的事', filled && filled.what);
+}
+
+// ---- T16 只打 #标签、没有正文时，what 退回标签名（不能变成占位条）------------
+{
+  seed([real(TODAY + 'T09:00', '写代码', '当前主线'), placeholder(TODAY + 'T10:00')]);
+  const out = bridge.quickWrite('当前主线', Object.assign(opts('10:30'), { what: '#睡觉' }));
+  const filled = at(TODAY + 'T10:00');
+  check('T16 what 非空', out.ok && filled && filled.what === '睡觉', JSON.stringify(filled));
+  check('T16 不是占位条', filled && !isPlaceholderEntry(filled));
+}
+
 console.log((failures ? 'FAILED ' : 'OK ') + (checks - failures) + '/' + checks + ' 断言通过');
 if (failures) process.exit(1);
 '''

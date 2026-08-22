@@ -19,7 +19,7 @@ class TimeLoggerWidget : AppWidgetProvider() {
 
     override fun onUpdate(context: Context, manager: AppWidgetManager, ids: IntArray) {
         val mirror = Mirror.read(context)
-        ids.forEach { id -> manager.updateAppWidget(id, build(context, mirror)) }
+        ids.forEach { id -> manager.updateAppWidget(id, build(context, mirror, rowsFor(manager, id))) }
         // 刚放上桌面时可能还没有镜像（用户从未打开过应用）：让桥算一次。
         if (mirror.nextStartTs.isEmpty()) QuickWrite.refreshMirror(context)
     }
@@ -28,18 +28,51 @@ class TimeLoggerWidget : AppWidgetProvider() {
         QuickWrite.refreshMirror(context)
     }
 
+    /** 拖动改变尺寸后立刻按新高度重排（多一排就多两个标签）。 */
+    override fun onAppWidgetOptionsChanged(
+        context: Context,
+        manager: AppWidgetManager,
+        appWidgetId: Int,
+        newOptions: android.os.Bundle
+    ) {
+        super.onAppWidgetOptionsChanged(context, manager, appWidgetId, newOptions)
+        manager.updateAppWidget(appWidgetId, build(context, Mirror.read(context), rowsFor(manager, appWidgetId)))
+    }
+
     companion object {
-        private val SLOTS = intArrayOf(R.id.w_tag0, R.id.w_tag1, R.id.w_tag2, R.id.w_tag3)
+        private val SLOTS = intArrayOf(
+            R.id.w_tag0, R.id.w_tag1, R.id.w_tag2, R.id.w_tag3, R.id.w_tag4, R.id.w_tag5
+        )
+        private val ROW_IDS = intArrayOf(R.id.w_row2, R.id.w_row3)
+
+        /**
+         * 有几排标签由小组件的**实际高度**决定：拉高就多给两个标签。
+         * 用 OPTION_APPWIDGET_MIN_HEIGHT（dp）而不是 Android 12 的多尺寸 RemoteViews，
+         * 因为后者只在 API 31+ 可用，而这条从 minSdk 26 起就一致。
+         */
+        private fun rowsFor(manager: AppWidgetManager, id: Int): Int {
+            val minHeight = try {
+                manager.getAppWidgetOptions(id).getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT, 0)
+            } catch (e: Exception) {
+                0
+            }
+            return when {
+                minHeight >= 220 -> 3
+                minHeight >= 130 -> 2
+                else -> 1
+            }
+        }
 
         fun updateAll(context: Context, mirror: Mirror) {
             val manager = AppWidgetManager.getInstance(context)
             val ids = manager.getAppWidgetIds(ComponentName(context, TimeLoggerWidget::class.java))
             if (ids.isEmpty()) return
-            val views = build(context, mirror)
-            ids.forEach { manager.updateAppWidget(it, views) }
+            // 逐个 id 单独渲染：同一台设备上两个小组件可能是不同尺寸，共用一份 RemoteViews
+            // 会让小的那个也铺三排。
+            ids.forEach { id -> manager.updateAppWidget(id, build(context, mirror, rowsFor(manager, id))) }
         }
 
-        private fun build(context: Context, mirror: Mirror): RemoteViews {
+        private fun build(context: Context, mirror: Mirror, rows: Int): RemoteViews {
             val views = RemoteViews(context.packageName, R.layout.widget)
             bindElapsed(context, views, mirror)
             val last = when {
@@ -51,7 +84,8 @@ class TimeLoggerWidget : AppWidgetProvider() {
             views.setTextViewText(R.id.w_last, last)
             views.setViewVisibility(R.id.w_last, if (last.isBlank()) View.GONE else View.VISIBLE)
 
-            val tags = mirror.suggestTags
+            val visibleSlots = (rows * 2).coerceAtMost(SLOTS.size)
+            val tags = mirror.suggestTags.take(visibleSlots)
             SLOTS.forEachIndexed { index, viewId ->
                 val tag = tags.getOrNull(index)
                 if (tag == null) {
@@ -64,11 +98,12 @@ class TimeLoggerWidget : AppWidgetProvider() {
                     views.setOnClickPendingIntent(viewId, writeIntent(context, tag, index))
                 }
             }
-            // 第二排全空时整排收起，避免小尺寸下留一条空轨道。
-            views.setViewVisibility(
-                R.id.w_row2,
-                if (tags.size > 2) View.VISIBLE else View.GONE
-            )
+            // 排数由尺寸决定；标签不够填满时那一排也收起，避免留空轨道。
+            ROW_IDS.forEachIndexed { rowIndex, rowId ->
+                val needed = (rowIndex + 2) * 2 - 1   // 第 2 排要第 3 个标签，第 3 排要第 5 个
+                val show = rows >= rowIndex + 2 && tags.size > needed
+                views.setViewVisibility(rowId, if (show) View.VISIBLE else View.GONE)
+            }
             views.setOnClickPendingIntent(R.id.w_open, openIntent(context))
             views.setOnClickPendingIntent(R.id.w_status, openIntent(context))
             return views

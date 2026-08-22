@@ -60,6 +60,7 @@ object Actions {
     const val OPEN_FORM = "org.eigentime.timelogger.action.OPEN_FORM"
     const val DISABLE_ONGOING = "org.eigentime.timelogger.action.DISABLE_ONGOING"
     const val EXTRA_TAG = "tag"
+    const val EXTRA_WHAT = "what"
     const val EXTRA_PREFILL = "prefill_tag"
     const val REPLY_KEY = "reply_what"
 }

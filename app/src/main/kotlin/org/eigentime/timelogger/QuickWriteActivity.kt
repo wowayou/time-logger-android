@@ -17,11 +17,14 @@ class QuickWriteActivity : android.app.Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val tag = intent?.getStringExtra(Actions.EXTRA_TAG)
-        if (tag.isNullOrBlank()) {
+        // 可选的 what：给「快捷方式带一句话」与自动验收用；语义与通知直接回复完全一致
+        // （文本里的 `#标签` 优先于这里的 tag，判断在桥里）。
+        val what = intent?.getStringExtra(Actions.EXTRA_WHAT)
+        if (tag.isNullOrBlank() && what.isNullOrBlank()) {
             finish()
             return
         }
-        QuickWrite.perform(this, tag) { out ->
+        QuickWrite.perform(this, tag.orEmpty(), what) { out ->
             runOnUiThread {
                 Toast.makeText(this, QuickWrite.message(this, out), Toast.LENGTH_LONG).show()
                 if (out.ok) {

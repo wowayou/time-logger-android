@@ -53,11 +53,11 @@ CASES = [
     (
         "让 what 允许为空（撤掉契约 §5）",
         BRIDGE,
-        "  const what = String(opts.what || '').trim() || tag;",
-        "  const what = String(opts.what || '').trim();",
-        # what 为空＝写出来的就是一条占位条，凡是写入的用例都该红。守卫处处承重，
-        # 这不是精度不够。
-        ["T1", "T5", "T11", "T12"],
+        "  const what = fromText.what || tag;",
+        "  const what = fromText.what;",
+        # what 为空＝写出来的就是一条占位条，凡是写入的用例都该红（T16 是「只打
+        # #标签、没有正文」那条，退化后 what 同样为空）。守卫处处承重，不是精度不够。
+        ["T1", "T5", "T11", "T12", "T16"],
     ),
     (
         "撤掉同分钟修正分支",
@@ -99,6 +99,22 @@ CASES = [
         "  const showWhat = showLastWhatOnWidget();",
         "  const showWhat = true;",
         ["T12"],
+    ),
+    (
+        "让 #标签 也能创建不存在的标签",
+        BRIDGE,
+        "    if (candidate && tagExists(candidate, config)) {",
+        "    if (candidate) {",
+        ["T15"],
+    ),
+    (
+        "文本里的 #标签 不再优先于通知携带的标签",
+        BRIDGE,
+        "  const tag = fromText.tag || canonicalTagName(String(tagInput || '').trim(), config);",
+        "  const tag = canonicalTagName(String(tagInput || '').trim(), config);",
+        # 撤掉优先级后，「只打 #睡觉」那条（T16）也会红：标签退回通知携带的，
+        # what 随之退回那个标签名。两条都该红，不是精度不够。
+        ["T14", "T16"],
     ),
     (
         "撤掉 localStorage 的替换（桥形同不存在）",

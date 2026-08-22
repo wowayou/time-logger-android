@@ -67,8 +67,9 @@
     <string name="settings_off">关</string>
     <string name="shortcut_settings_short">壳设置</string>
     <string name="about_title">关于本应用</string>
-    <string name="about_open_source">开源软件（AGPL-3.0）。源码与免费构建都在 GitHub —— 本应用没有任何付费功能。</string>
+    <string name="about_open_source">开源软件（AGPL-3.0）。源码与免费构建都在 GitHub。</string>
     <string name="about_repo">github.com/wowayou/time-logger-android</string>
     <string name="about_web">网页版永久免费：time.eigentime.org</string>
-    <string name="about_paid_note">如果你在商店里付过费，买的是「商店分发与自动更新」，不是功能。</string>
+    <string name="about_free">免费、无广告、无内购、无订阅。所有功能永久免费。</string>
+    <string name="about_support_note">支持作者完全自愿，且不购买任何东西——不买功能、不买优先权、不买产品路线的影响力。</string>
 </resources>

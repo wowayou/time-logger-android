@@ -68,6 +68,28 @@ function entriesOnDay(entries, dayKey) {
   return loggedEntriesFrom(entries).filter(e => e.ts.slice(0, 10) === dayKey);
 }
 
+/**
+ * 从用户敲的文本里认出 `#标签`（通知直接回复的场景：键盘已经在手上，标签不该受
+ * 通知只能放 3 个动作的限制）。
+ *
+ * 只认**已存在**的标签（契约 §7：一键路径绝不顺手建标签）；认不出就原样留在文本里，
+ * 不静默丢掉用户打的字。命中后把该 token 从 what 里去掉，剩下的才是「做了什么」。
+ *
+ * @returns {{tag: string, what: string}} tag 为空表示没认出来
+ */
+export function resolveTagFromText(text, config) {
+  const raw = String(text || '');
+  const tokens = raw.match(/#[^\s#]+/g) || [];
+  for (const token of tokens) {
+    const candidate = canonicalTagName(token.slice(1), config);
+    if (candidate && tagExists(candidate, config)) {
+      const what = raw.replace(token, ' ').replace(/\s+/g, ' ').trim();
+      return { tag: candidate, what };
+    }
+  }
+  return { tag: '', what: raw.trim() };
+}
+
 function fail(reason, extra = {}) {
   return Object.assign({ ok: false, reason }, extra);
 }
@@ -123,12 +145,14 @@ export function probe(opts = {}) {
  */
 function quickWriteImpl(tagInput, opts = {}) {
   const config = loadConfig();
-  const tag = canonicalTagName(String(tagInput || '').trim(), config);
+  // 直接回复里打的 `#标签` 优先于通知携带的那个：键盘已经在手上，用户显式指定了。
+  const fromText = resolveTagFromText(opts.what, config);
+  const tag = fromText.tag || canonicalTagName(String(tagInput || '').trim(), config);
   if (!tag) return fail('empty-tag');
   // 契约 §7：一键写入只能用已存在的标签，绝不顺手建标签。
   if (!tagExists(tag, config)) return fail('unknown-tag', { tag });
   // 契约 §5：what 为空的记录在数据层就是一条未记录占位条，不是记录。
-  const what = String(opts.what || '').trim() || tag;
+  const what = fromText.what || tag;
 
   const p = probe(opts);
   if (!p.ok) {

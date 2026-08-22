@@ -81,13 +81,14 @@ class SettingsActivity : android.app.Activity() {
             }
         }
 
-        // 诚实声明（维护者要求）：付费只买商店分发，功能与源码始终免费可得。
+        // 诚实声明（维护者要求）：应用免费、开源，支持作者是自愿的且不购买任何东西。
         // 放在壳设置最下方而不是首屏——它是事实说明，不是营销位。
+        // 刻意**不放**支持页链接：那个页面还不存在，宁可少一行也不给死链。
         title(getString(R.string.about_title))
         row(getString(R.string.about_open_source), getString(R.string.about_repo)) {
             open("https://github.com/wowayou/time-logger-android")
         }
-        row(getString(R.string.about_web), getString(R.string.about_paid_note)) {
+        row(getString(R.string.about_free), getString(R.string.about_support_note)) {
             open("https://time.eigentime.org/")
         }
 

@@ -59,10 +59,11 @@
     <string name="settings_on">On</string>
     <string name="settings_off">Off</string>
     <string name="shortcut_settings_short">Shell settings</string>
-    <!-- 诚实声明：付费只买「商店分发与自动更新」，功能与源码始终免费可得 -->
+    <!-- 诚实声明：应用免费、无广告、无内购；支持作者是自愿的，且不购买任何功能 -->
     <string name="about_title">About this app</string>
-    <string name="about_open_source">Open source (AGPL-3.0). Source code and a free build are on GitHub — this app has no paid features.</string>
+    <string name="about_open_source">Open source (AGPL-3.0). Source code and a free build are on GitHub.</string>
     <string name="about_repo">github.com/wowayou/time-logger-android</string>
     <string name="about_web">The web version is free forever: time.eigentime.org</string>
-    <string name="about_paid_note">If you paid on a store, you paid for store distribution and automatic updates, not for features.</string>
+    <string name="about_free">Free, no ads, no in-app purchases, no subscription. Every feature is free forever.</string>
+    <string name="about_support_note">Supporting the author is voluntary and buys nothing — not features, not priority, not influence over the roadmap.</string>
 </resources>

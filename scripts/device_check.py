@@ -195,6 +195,25 @@ def main() -> int:
         stamps = [e["ts"] for e in entries]
         check("同刻唯一", len(set(stamps)) == len(stamps), ",".join(stamps))
 
+    print("== 通知直接回复：文本里的 #标签 优先，token 不进正文 ==")
+    reply_seed = {"version": 1, "entries": [
+        {"id": "r1", "ts": f"{day}T{minutes_ago(70)}", "what": "写代码", "tags": ["当前主线"]},
+        {"id": "r2", "ts": f"{day}T{minutes_ago(25)}", "what": "", "tags": []},
+    ]}
+    d.write_store("timelog.v1", json.dumps(reply_seed, ensure_ascii=False))
+    d.sh("am", "start", "-a", "org.eigentime.timelogger.action.WRITE",
+         "-n", f"{PKG}/org.eigentime.timelogger.QuickWriteActivity",
+         "--es", "tag", "当前主线", "--es", "what", "#睡觉 补了个午觉")
+    time.sleep(9)
+    after_reply = d.read_store("timelog.v1")
+    if after_reply:
+        entry = next((e for e in json.loads(after_reply)["entries"]
+                      if e["ts"] == f"{day}T{minutes_ago(25)}"), None)
+        check("#标签 覆盖了通知携带的标签", entry is not None and entry.get("tags") == ["睡觉"],
+              json.dumps(entry, ensure_ascii=False) if entry else "没找到")
+        check("#标签 的 token 没留在正文里", entry is not None and entry.get("what") == "补了个午觉",
+              entry.get("what") if entry else "")
+
     print("== 守卫：空白超过上限（默认 240 分钟）时不许静默写 ==")
     stale = {"version": 1, "entries": [
         {"id": "old1", "ts": f"{day}T{minutes_ago(360)}", "what": "写代码", "tags": ["当前主线"]},

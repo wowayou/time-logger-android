@@ -81,4 +81,18 @@
         <TextView android:id="@+id/w_tag2" style="@style/WidgetChip" />
         <TextView android:id="@+id/w_tag3" style="@style/WidgetChip" android:layout_marginStart="6dp" />
     </LinearLayout>
+
+    <!-- 第三排只在小组件被拉高时出现（见 TimeLoggerWidget.rowsFor）。 -->
+    <LinearLayout
+        android:id="@+id/w_row3"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="6dp"
+        android:orientation="horizontal"
+        android:baselineAligned="false">
+
+        <TextView android:id="@+id/w_tag4" style="@style/WidgetChip" />
+        <TextView android:id="@+id/w_tag5" style="@style/WidgetChip" android:layout_marginStart="6dp" />
+    </LinearLayout>
 </LinearLayout>
