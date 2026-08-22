@@ -28,6 +28,7 @@ android {
 
     androidResources {
         // 只打包 zh / en 两套文案（web 运行时同样只有这两种），别的语言不留空壳。
+        // 默认目录 values/ 是英文，中文在 values-zh/——见 res/xml/locales_config.xml 的注释。
         localeFilters += listOf("zh", "en")
     }
 

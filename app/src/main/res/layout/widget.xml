@@ -12,6 +12,19 @@
         android:orientation="horizontal"
         android:baselineAligned="false">
 
+        <!-- 两个视图轮换显示：有起点时用 Chronometer（自己走秒，不需要任何唤醒，
+             RemoteViews 只在写入/回前台/30 分钟周期时重画，靠 TextView 会冻住），
+             没有镜像或被守卫拦下时退回普通文字。 -->
+        <Chronometer
+            android:id="@+id/w_chrono"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textColor="@color/text_dark"
+            android:textSize="13sp"
+            android:maxLines="1"
+            android:ellipsize="end" />
+
         <TextView
             android:id="@+id/w_status"
             android:layout_width="0dp"

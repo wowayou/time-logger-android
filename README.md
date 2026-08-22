@@ -53,6 +53,7 @@ python3 scripts/sync_runtime.py          # 从 ../time-logger 同步内嵌运行
 ## 自测
 
 ```bash
+python3 scripts/project_audit.py         # 结构闸：版本锚点、隐私边界、原生不实现业务逻辑
 python3 scripts/quick_write_smoke.py     # 契约的纯逻辑 smoke：真实 web 模块 + 真实桥（41 条断言）
 python3 scripts/shim_smoke.py            # localStorage 桥：同步语义、配额抛错、SW 桩、变更通知（22 条）
 python3 scripts/redlight.py              # 逐条撤掉守卫，确认对应用例确实会变红（12 处，P35 纪律）
@@ -87,6 +88,18 @@ web 界面里，这里一个都不重复。
 - 迁移靠「完整备份」JSON：手机上的 Chrome PWA 与本应用是**两份独立数据**，
   不要两边同时记。
 
-## 许可
+## 许可与付费（诚实说明）
 
-AGPL-3.0-or-later，与 web 仓一致（内嵌的运行时就是那份代码）。
+**AGPL-3.0-or-later**，与 web 仓一致——内嵌的运行时就是那份代码，所以整个 APK 都是同一份
+许可下的作品。
+
+- **源码在这里，免费构建也在这里。** 本仓公开，任何人都可以自己编译、自己安装、自由再分发。
+- 计划以 **$1（临时定价）** 上 Google Play。买的是**商店分发与自动更新**这项便利，
+  **不是功能**：没有付费功能、没有订阅、没有广告、没有内购。网页版
+  （<https://time.eigentime.org>）永久免费。
+- AGPL 允许任何人免费再分发你买到的这个包——$1 是支持作者的姿态，不是护城河，
+  本项目不会为了阻止免费流通去做许可校验或联网激活。
+- 应用内也说了同样的话：壳设置 → 关于本应用。
+
+上架清单与文案草案见 `docs/release-checklist.md`；付费形态的决策记在 web 仓
+`docs/decisions.md` D27（显式修订 D7）。

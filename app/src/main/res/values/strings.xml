@@ -1,69 +1,68 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">时间尺</string>
-    <string name="widget_label">时间尺 · 一键记</string>
-    <string name="widget_description">点一个标签，追认「上次记录到现在」这段时间</string>
+    <string name="app_name">Time Logger</string>
+    <string name="widget_label">Time Logger · one tap</string>
+    <string name="widget_description">Tap a tag to label the time since your last entry</string>
 
-    <!-- 小组件 / 通知 状态行 -->
-    <string name="status_since">距上次记录 %1$s</string>
-    <string name="status_just_now">刚记过</string>
-    <string name="status_no_mirror">打开一次应用即可开始</string>
-    <string name="dur_h">%1$d 小时</string>
-    <string name="dur_m">%1$d 分</string>
-    <string name="dur_hm">%1$d 小时 %2$d 分</string>
+    <string name="status_since">%1$s since last entry</string>
+    <string name="status_just_now">Just logged</string>
+    <string name="status_no_mirror">Open the app once to start</string>
+    <string name="dur_h">%1$dh</string>
+    <string name="dur_m">%1$dm</string>
+    <string name="dur_hm">%1$dh %2$dm</string>
 
-    <!-- 一键写入结果 -->
-    <string name="written">已记下 %1$s 起 · %2$s</string>
-    <string name="written_corrected">已改成 %1$s</string>
-    <string name="undo">撤销</string>
-    <string name="undone">已撤销</string>
-    <string name="undo_changed">数据已有其它改动，这次不撤销</string>
-    <string name="undo_none">没有可撤销的记录</string>
+    <string name="written">Logged from %1$s · %2$s</string>
+    <string name="written_corrected">Changed to %1$s</string>
+    <string name="undo">Undo</string>
+    <string name="undone">Undone</string>
+    <string name="undo_changed">Data changed since then — not undoing</string>
+    <string name="undo_none">Nothing to undo</string>
 
-    <!-- 守卫（契约 §4）：这些情况不静默写，改为打开应用让用户确认起点 -->
-    <string name="guard_fresh_day">今天还没有记录，起点会落在 00:00 —— 打开应用确认一下</string>
-    <string name="guard_gap">距上次记录已 %1$s，一键会给这段空白整个盖标签 —— 打开应用确认起点</string>
-    <string name="guard_no_slot">今天已记到 23:59，没有可写的起点了</string>
-    <string name="guard_conflict">这一刻已经有别的记录（%1$s）</string>
-    <string name="guard_concurrent">应用里刚写过一次，这次没有保存，请再点一下</string>
-    <string name="guard_quota">存储写入失败，这次改动没有保存</string>
-    <string name="guard_unknown_tag">「%1$s」不在标签列表里，一键记录不会顺手新建标签</string>
-    <string name="guard_internal">写入过程出错，这次没有记下（%1$s）</string>
-    <string name="guard_generic">这次没有写入（%1$s）</string>
-    <string name="guard_timeout">应用没能及时响应，这次没有写入</string>
+    <string name="guard_fresh_day">No entry today yet, so the start would be 00:00 — open the app to confirm</string>
+    <string name="guard_gap">%1$s since your last entry — open the app to confirm the start</string>
+    <string name="guard_no_slot">Today is already logged to 23:59; no start left</string>
+    <string name="guard_conflict">Another entry already sits at that minute (%1$s)</string>
+    <string name="guard_concurrent">The app just wrote something; nothing saved this time — tap again</string>
+    <string name="guard_quota">Storage write failed; this change was not saved</string>
+    <string name="guard_unknown_tag">“%1$s” is not in your tag list; one-tap never creates tags</string>
+    <string name="guard_internal">Something failed while writing; nothing was logged (%1$s)</string>
+    <string name="guard_generic">Nothing was written (%1$s)</string>
+    <string name="guard_timeout">The app did not respond in time; nothing was written</string>
 
-    <!-- 磁贴 / 选择器 -->
-    <string name="tile_label">记一条</string>
-    <string name="pick_title">这段时间在做什么？</string>
-    <string name="pick_open_app">打开应用，自己填</string>
-    <string name="pick_cancel">取消</string>
+    <string name="tile_label">Log it</string>
+    <string name="pick_title">What were you doing?</string>
+    <string name="pick_open_app">Open the app and type it</string>
+    <string name="pick_cancel">Cancel</string>
 
-    <!-- 常驻通知 -->
-    <string name="notif_channel_ongoing">常驻记录入口</string>
-    <string name="notif_channel_ongoing_desc">显示距上次记录多久，并提供一键记录与直接回复</string>
-    <string name="notif_channel_result">记录结果</string>
-    <string name="notif_channel_result_desc">一键记录后的确认与撤销</string>
-    <string name="notif_reply_label">写一句</string>
-    <string name="notif_reply_hint">刚才在做什么？</string>
-    <string name="notif_open">打开</string>
+    <string name="notif_channel_ongoing">Always-on logging entry</string>
+    <string name="notif_channel_ongoing_desc">Shows time since your last entry, with one-tap logging and direct reply</string>
+    <string name="notif_channel_result">Logging result</string>
+    <string name="notif_channel_result_desc">Confirmation and undo after a one-tap log</string>
+    <string name="notif_reply_label">Type it</string>
+    <string name="notif_reply_hint">What were you doing?</string>
+    <string name="notif_open">Open</string>
 
-    <!-- 主界面 -->
-    <string name="shim_failed">存储桥没能装上：应用内的数据与小组件可能不是同一份，请反馈这条信息</string>
-    <string name="runtime_missing">内嵌运行时缺失，请重新构建安装包</string>
-    <string name="shortcut_log_short">记一条</string>
-    <string name="shortcut_log_long">打开记录表单</string>
-    <!-- 壳设置（只有原生入口相关的项；产品设置在 web 界面里） -->
-    <string name="settings_title">原生入口设置</string>
-    <string name="settings_ongoing">常驻通知入口</string>
-    <string name="settings_ongoing_hint">下拉通知栏即可一键记录或直接回复；低优先级、静音</string>
-    <string name="settings_show_what">小组件显示上一条内容</string>
-    <string name="settings_show_what_hint">关闭后小组件只显示标签，不显示你写的那句话</string>
-    <string name="settings_gap">安静写入上限</string>
-    <string name="settings_gap_hint">当前 %1$s。超过这个空白长度时，一键会改为打开表单让你确认起点</string>
-    <string name="settings_recompute">重算小组件数据</string>
-    <string name="settings_recompute_hint">小组件显示不对时点一下</string>
-    <string name="settings_recomputed">已重算</string>
-    <string name="settings_on">开</string>
-    <string name="settings_off">关</string>
-    <string name="shortcut_settings_short">壳设置</string>
+    <string name="shim_failed">Storage bridge failed to install: the app and the widget may write different data. Please report this.</string>
+    <string name="runtime_missing">Embedded runtime missing — rebuild the APK</string>
+    <string name="shortcut_log_short">Log it</string>
+    <string name="shortcut_log_long">Open the entry form</string>
+    <string name="settings_title">Native entry points</string>
+    <string name="settings_ongoing">Always-on notification</string>
+    <string name="settings_ongoing_hint">Log or reply straight from the shade; low priority and silent</string>
+    <string name="settings_show_what">Show last note on the widget</string>
+    <string name="settings_show_what_hint">When off the widget shows only the tag, not what you wrote</string>
+    <string name="settings_gap">Silent-write limit</string>
+    <string name="settings_gap_hint">Currently %1$s. Beyond that gap, one tap opens the form so you can confirm the start</string>
+    <string name="settings_recompute">Recompute widget data</string>
+    <string name="settings_recompute_hint">Tap if the widget looks wrong</string>
+    <string name="settings_recomputed">Recomputed</string>
+    <string name="settings_on">On</string>
+    <string name="settings_off">Off</string>
+    <string name="shortcut_settings_short">Shell settings</string>
+    <!-- 诚实声明：付费只买「商店分发与自动更新」，功能与源码始终免费可得 -->
+    <string name="about_title">About this app</string>
+    <string name="about_open_source">Open source (AGPL-3.0). Source code and a free build are on GitHub — this app has no paid features.</string>
+    <string name="about_repo">github.com/wowayou/time-logger-android</string>
+    <string name="about_web">The web version is free forever: time.eigentime.org</string>
+    <string name="about_paid_note">If you paid on a store, you paid for store distribution and automatic updates, not for features.</string>
 </resources>

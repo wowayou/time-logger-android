@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 显式声明本应用支持的语言，让系统在「设备语言列表 ∩ 应用支持语言」里选，
+     顺便让系统设置里出现「应用语言」开关。
+     默认语言＝en，对应未加限定符的 values/；中文在 values-zh/。 -->
+<locale-config xmlns:android="http://schemas.android.com/apk/res/android"
+    android:defaultLocale="en">
+    <locale android:name="zh-CN" />
+    <locale android:name="en" />
+</locale-config>

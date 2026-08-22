@@ -81,6 +81,16 @@ class SettingsActivity : android.app.Activity() {
             }
         }
 
+        // 诚实声明（维护者要求）：付费只买商店分发，功能与源码始终免费可得。
+        // 放在壳设置最下方而不是首屏——它是事实说明，不是营销位。
+        title(getString(R.string.about_title))
+        row(getString(R.string.about_open_source), getString(R.string.about_repo)) {
+            open("https://github.com/wowayou/time-logger-android")
+        }
+        row(getString(R.string.about_web), getString(R.string.about_paid_note)) {
+            open("https://time.eigentime.org/")
+        }
+
         val source = try {
             assets.open("app/RUNTIME_SOURCE.txt").use { it.readBytes().toString(Charsets.UTF_8) }
         } catch (e: Exception) {
@@ -131,6 +141,16 @@ class SettingsActivity : android.app.Activity() {
     private fun toggle(label: String, hint: String, on: Boolean, onClick: () -> Unit) {
         val state = getString(if (on) R.string.settings_on else R.string.settings_off)
         row("$label · $state", hint, onClick)
+    }
+
+    /** 打开外部链接。不需要 INTERNET 权限——取网页的是浏览器，不是我们。 */
+    private fun open(url: String) {
+        try {
+            startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW,
+                android.net.Uri.parse(url)))
+        } catch (e: Exception) {
+            Toast.makeText(this, url, Toast.LENGTH_LONG).show()
+        }
     }
 
     private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()

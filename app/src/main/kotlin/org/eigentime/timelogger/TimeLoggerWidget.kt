@@ -41,7 +41,7 @@ class TimeLoggerWidget : AppWidgetProvider() {
 
         private fun build(context: Context, mirror: Mirror): RemoteViews {
             val views = RemoteViews(context.packageName, R.layout.widget)
-            views.setTextViewText(R.id.w_status, mirror.statusLine(context))
+            bindElapsed(context, views, mirror)
             val last = when {
                 mirror.lastWhat.isNotBlank() ->
                     "${Mirror.parseLocal(mirror.lastTs)?.let { QuickWrite.hhmm(mirror.lastTs) } ?: ""} ${mirror.lastWhat}".trim()
@@ -72,6 +72,28 @@ class TimeLoggerWidget : AppWidgetProvider() {
             views.setOnClickPendingIntent(R.id.w_open, openIntent(context))
             views.setOnClickPendingIntent(R.id.w_status, openIntent(context))
             return views
+        }
+
+        /**
+         * 「距上次记录多久」这一行。RemoteViews 只在写入、应用回到前台或 30 分钟周期时
+         * 重画，用普通 TextView 写死一个「25 分」会一直冻在那里；Chronometer 由系统在
+         * 宿主进程里自己走秒，**不需要任何唤醒或定时器**，代价是格式变成 mm:ss / h:mm:ss。
+         * 拿不到起点（没打开过应用）时退回文字提示。
+         */
+        private fun bindElapsed(context: Context, views: RemoteViews, mirror: Mirror) {
+            val startMs = Mirror.parseLocal(mirror.nextStartTs)
+            if (startMs == null) {
+                views.setViewVisibility(R.id.w_chrono, View.GONE)
+                views.setViewVisibility(R.id.w_status, View.VISIBLE)
+                views.setTextViewText(R.id.w_status, mirror.statusLine(context))
+                return
+            }
+            views.setViewVisibility(R.id.w_status, View.GONE)
+            views.setViewVisibility(R.id.w_chrono, View.VISIBLE)
+            // Chronometer 的 base 是 SystemClock.elapsedRealtime() 轴上的时刻，
+            // 要把壁钟差值换算过去。
+            val base = android.os.SystemClock.elapsedRealtime() - (System.currentTimeMillis() - startMs)
+            views.setChronometer(R.id.w_chrono, base, context.getString(R.string.status_since), true)
         }
 
         private fun writeIntent(context: Context, tag: String, index: Int): PendingIntent {

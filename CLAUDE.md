@@ -27,7 +27,10 @@
 7. 改 `quick_write.js` / `store_shim.js` 或任何守卫后，**必须**跑 `quick_write_smoke.py`、
    `shim_smoke.py` 与 `redlight.py`；
    新增守卫要同时新增一处红灯。红灯点不亮＝那条用例没在测它。
-8. 版本号只能从 web 版本派生（`sync_runtime.py` 写 `app/version.properties`），
+8. **付费不得变成功能墙。** 上架定价买的是分发与自动更新；不得引入付费功能、订阅、
+   内购、广告、分析 SDK，也不得为阻止免费流通做许可校验或联网激活（AGPL + D27）。
+   应用内、README、商店文案三处的「有开源免费版可用」声明不得删除或弱化。
+9. 版本号只能从 web 版本派生（`sync_runtime.py` 写 `app/version.properties`），
    不手写 `versionCode` / `versionName`。
 
 ## 目录边界
@@ -45,6 +48,7 @@
 
 ```bash
 python3 scripts/sync_runtime.py
+python3 scripts/project_audit.py
 python3 scripts/quick_write_smoke.py
 python3 scripts/shim_smoke.py
 python3 scripts/redlight.py
@@ -61,6 +65,9 @@ git status --short   # 不许出现 assets/app/、*.apk、keystore、真实备�
 
 ## 当前状态
 
-- v1 目标：内嵌运行时可用 + 四个原生入口 + 契约与红灯齐备。
-- 分发：自用侧载（debug 签名），但包名、签名配置、权限清单按可上架标准搭。
-- 上架前还欠：隐私政策页、数据安全表单、release 密钥、真机验收清单。
+- v1 已在 S23（Android 14）真机验收：自动 24/24，小组件与磁贴的一键写入端到端通过；
+  热进程 0.1 秒、冷进程 0.55 秒完成一次记录。详见 `docs/device-acceptance.md`。
+- 分发：当前自用侧载（debug 签名）。计划以 $1 上 Google Play，清单见
+  `docs/release-checklist.md`；决策见 web 仓 D27。
+- 上架前还欠：隐私政策页补一节「Android 应用」（web 仓 `site/`）、release 上传密钥、
+  商店资产（必须用合成 demo 数据）、通知动作按钮的真机点击验证。
