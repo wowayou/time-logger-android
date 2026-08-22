@@ -10,7 +10,7 @@
 > | 隐私政策 | **已上线**。中英两版第 6 节「Android 应用 / Android app」，`time.eigentime.org/privacy/` 已 curl 复核 |
 > | 商店图标 512×512 | **已做**：`docs/store/icon-512.png`（直接用运行时那张 512，品牌逐字节一致） |
 > | 特征图 1024×500 | **已做**：`docs/store/feature-1024x500.png`（只有品牌 + 两行事实描述，无排名/促销字样） |
-> | 手机截图 ≥2 张 | **未做，卡在录屏浮层**。`scripts/store_screenshots.py` 已写好（播种合成 demo 数据 → 逐屏截图 → 裁状态栏），但它检测到 Samsung 录屏工具栏就会拒绝输出。**关掉录屏后一条命令即可** |
+> | 手机截图 ≥2 张 | **已做**：`docs/store/screen-1-day.png`（日视图：结论卡 + 连续日志）、`screen-2-week.png`（周视图：四桶比例 + 每日汇总）、`screen-3-form.png`（记一条表单）。1064×2244，合成 demo 数据（本周 4 天），已裁掉状态栏与 One UI 的 Edge 面板手柄 |
 > | 商标检索 | **没做成**。搜索引擎只返回通用注册常识页；Play 商店搜 `eigentime` 无同名应用（实测）。权威检索要在 USPTO TESS / EUIPO eSearch / CNIPA 上人工做，**本文件不构成商标结论** |
 > | 开发者账号 / 上传密钥 | **只有维护者能做**，见 §2 |
 > | 网站支持页 | **未做**，等收款渠道确定；在它上线前应用内不放链接 |
