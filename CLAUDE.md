@@ -71,8 +71,8 @@ git status --short   # 不许出现 assets/app/、*.apk、keystore、真实备�
 
 - v1 已在 S23（Android 14）真机验收：自动 24/24，小组件与磁贴的一键写入端到端通过；
   热进程 0.1 秒、冷进程 0.55 秒完成一次记录。详见 `docs/device-acceptance.md`。
-- 分发：当前自用侧载（debug 签名）。计划以 $1 上 Google Play，清单见
-  `docs/release-checklist.md`；决策见 web 仓 D27。
+- 分发：当前自用侧载（debug 签名）。计划**免费**上 Google Play，金钱入口只在网站的
+  自愿支持页；清单见 `docs/release-checklist.md`，决策见 web 仓 D28（收窄了 D27 的 $1）。
 - 上架前还欠：release 上传密钥、商店资产（必须用合成 demo 数据）、网站支持页。
   隐私政策的「Android 应用」一节已写入 web 仓 `site/`（待发布一次生效）。
 - 英文名统一为 **Eigentime**（web 仓 D29）；中文名 **时间尺**。包名 `org.eigentime.timelogger`

@@ -24,6 +24,16 @@ BRIDGE = ROOT / "app/src/main/assets/bridge/quick_write.js"
 SHIM = ROOT / "app/src/main/assets/bridge/store_shim.js"
 ASSETS_APP = ROOT / "app/src/main/assets/app"
 
+# 商店资产白名单：显式列文件名，不用通配——`docs/store/` 是本仓唯一允许放 PNG 的地方，
+# 也因此最容易变成垃圾桶（web 仓 docs/assets 踩过同一个坑）。截图必须是合成 demo 数据。
+ALLOWED_STORE_ASSETS = {
+    "icon-512.png": (512, 512),
+    "feature-1024x500.png": (1024, 500),
+    "screen-1-day.png": None,
+    "screen-2-week.png": None,
+    "screen-3-form.png": None,
+}
+
 errors: list[str] = []
 
 
@@ -127,6 +137,35 @@ def audit_bridge_uses_real_modules() -> None:
         fail("store_shim.js 必须给 navigator.serviceWorker 上桩（红线①第三道）")
 
 
+def png_size(path: Path) -> tuple[int, int]:
+    import struct
+    with path.open("rb") as f:
+        head = f.read(24)
+    if head[:8] != b"\x89PNG\r\n\x1a\n":
+        raise ValueError("not a PNG")
+    return struct.unpack(">II", head[16:24])
+
+
+def audit_store_assets() -> None:
+    store = ROOT / "docs/store"
+    if not store.is_dir():
+        return
+    for path in sorted(store.glob("*.png")):
+        if path.name not in ALLOWED_STORE_ASSETS:
+            fail(f"docs/store/{path.name} 未登记（改 ALLOWED_STORE_ASSETS；且必须是合成 demo 数据）")
+            continue
+        expected = ALLOWED_STORE_ASSETS[path.name]
+        if expected is None:
+            continue
+        try:
+            actual = png_size(path)
+        except Exception as exc:
+            fail(f"docs/store/{path.name} 读不出尺寸：{exc}")
+            continue
+        if actual != expected:
+            fail(f"docs/store/{path.name} 尺寸应为 {expected}，实际 {actual}（Play 会拒绝）")
+
+
 def audit_strings_parity() -> None:
     default = ROOT / "app/src/main/res/values/strings.xml"
     zh = ROOT / "app/src/main/res/values-zh/strings.xml"
@@ -161,6 +200,7 @@ def main() -> int:
     audit_native_has_no_business_logic()
     audit_bridge_uses_real_modules()
     audit_strings_parity()
+    audit_store_assets()
     if errors:
         print("android project audit FAILED:", file=sys.stderr)
         for e in errors:

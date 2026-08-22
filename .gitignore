@@ -21,6 +21,9 @@ app/version.properties
 timelog-*.json
 *.png
 !app/src/main/res/**/*.png
+# 商店资产是唯一的 PNG 白名单目录，且**必须是合成 demo 数据**；
+# 新增任何图都要在 scripts/project_audit.py 的 ALLOWED_STORE_ASSETS 里登记。
+!docs/store/*.png
 *.jpg
 *.jpeg
 *.webp
