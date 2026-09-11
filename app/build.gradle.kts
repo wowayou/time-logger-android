@@ -11,7 +11,15 @@ val runtimeProps = Properties().apply {
     val f = rootProject.file("app/version.properties")
     if (f.exists()) f.inputStream().use { load(it) }
 }
-val webVersion = (runtimeProps.getProperty("web.version") ?: "0").toInt()
+// web 仓自 1.0.0 起版本是三段式 semver。versionCode 仍派生为单调整数：
+// major*10_000_000 + minor*100_000 + patch*1_000 + revision（1.0.0.1 = 10_001_001，
+// 大于旧单整数方案产生的 9301，跨格式切换不会回退）；versionName 是
+// 「<web 版本>.<revision>」的字面拼接。解析不出三段时按 0 处理，
+// assertRuntimeSynced 会拦住（没同步过运行时的构建在 mergeAssets 前就失败）。
+val webSemver = (runtimeProps.getProperty("web.version") ?: "0.0.0").split(".")
+val webMajor = webSemver.getOrNull(0)?.toIntOrNull() ?: 0
+val webMinor = webSemver.getOrNull(1)?.toIntOrNull() ?: 0
+val webPatch = webSemver.getOrNull(2)?.toIntOrNull() ?: 0
 val androidRevision = (runtimeProps.getProperty("android.revision") ?: "0").toInt()
 
 android {
@@ -22,8 +30,8 @@ android {
         applicationId = "org.eigentime.timelogger"
         minSdk = 26
         targetSdk = 36
-        versionCode = webVersion * 100 + androidRevision
-        versionName = "$webVersion.$androidRevision"
+        versionCode = webMajor * 10_000_000 + webMinor * 100_000 + webPatch * 1_000 + androidRevision
+        versionName = "$webMajor.$webMinor.$webPatch.$androidRevision"
     }
 
     androidResources {
@@ -97,7 +105,7 @@ val assertRuntimeSynced by tasks.registering {
                 "内嵌运行时缺失：请先运行 python3 scripts/sync_runtime.py（从 web 仓同步 sw.js FILES 清单）"
             )
         }
-        if (webVersion == 0) {
+        if (webMajor == 0) {
             throw GradleException("app/version.properties 缺失或未写入 web.version：请先运行 sync_runtime.py")
         }
     }

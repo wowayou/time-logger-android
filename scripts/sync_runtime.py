@@ -59,8 +59,9 @@ def main() -> int:
     files = parse_files((src / "sw.js").read_text(encoding="utf-8"))
     manifest = json.loads((src / "manifest.webmanifest").read_text(encoding="utf-8"))
     web_version = str(manifest.get("version", "")).strip()
-    if not web_version.isdigit():
-        raise SystemExit(f"manifest version 不是数字：{web_version!r}")
+    # web 仓自 1.0.0 起是三段式 semver（f1badb2）；单整数格式不再接受。
+    if not re.fullmatch(r"\d+\.\d+\.\d+", web_version):
+        raise SystemExit(f"manifest version 不是三段式 semver：{web_version!r}")
 
     if ASSETS.exists():
         shutil.rmtree(ASSETS)

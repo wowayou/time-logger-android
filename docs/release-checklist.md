@@ -143,7 +143,7 @@ python3 scripts/device_check.py --serial <设备>   # release 包也要过一遍
 1. `python3 scripts/sync_runtime.py`（把上游版本与 commit 写进 `app/version.properties`）
 2. 跑满自测（§5 那一串）
 3. `./gradlew bundleRelease assembleRelease`
-4. 打 tag：`git tag a<web版本>.<revision>`（例如 `a93.1`，与 web 仓的 `v93` 区分开）
+4. 打 tag：`git tag a<web版本>.<revision>`（web 仓 1.0.0 起是三段式 semver，例如 `a1.0.0.1`；与 web 仓的 `v1.0.0` tag 区分开）
 5. `git push origin main --tags`
 6. 建 GitHub Release，标题同 tag，**附上 `app-release.apk`**——这就是「免费构建随手可得」
    那句承诺的兑现方式（D28）

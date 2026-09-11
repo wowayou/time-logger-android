@@ -67,7 +67,7 @@ def audit_version_anchors(web_repo: Path) -> None:
                  f"{web_version!r} 不一致——重跑 sync_runtime.py")
     source = read(ASSETS_APP / "RUNTIME_SOURCE.txt")
     if source:
-        match = re.search(r"web version: (\d+)", source)
+        match = re.search(r"web version: (\d+(?:\.\d+)*)", source)
         if match and match.group(1) != values.get("web.version"):
             fail("assets/app/RUNTIME_SOURCE.txt 与 version.properties 的 web 版本不一致")
 
@@ -137,6 +137,84 @@ def audit_bridge_uses_real_modules() -> None:
         fail("store_shim.js 必须给 navigator.serviceWorker 上桩（红线①第三道）")
 
 
+# 契约 selector 的安卓侧消费者（web 运行时 DOM）。新消费方出现时登记到这里。
+CONTRACT_SELECTOR_CONSUMERS = (
+    ROOT / "app/src/main/kotlin/org/eigentime/timelogger/MainActivity.kt",
+    ROOT / "scripts/shell_browser_check.mjs",
+)
+
+
+def _norm_sel(s: str) -> str:
+    """把 selector 截到第一个属性值（=）之前。Kotlin 里拼接出的 JS 字面量在
+    =\\" 处被切断，契约侧是完整形态（[data-tag]）；两边都截断后做边界前缀匹配。"""
+    return re.split(r"=", s, maxsplit=1)[0].strip()
+
+
+def _sel_covers(a: str, b: str) -> bool:
+    """a 与 b 互相覆盖：相等，或短的一方是长一方的前缀且断在 selector 边界字符上
+    （#timeline 与 #timeline-x 不得互认，#form-chips .chip[data-tag 与 …[data-tag] 要认）。"""
+    short, long = (a, b) if len(a) <= len(b) else (b, a)
+    if not long.startswith(short):
+        return False
+    return len(short) == len(long) or long[len(short)] in " .>[]:#"
+
+
+def audit_contract_covers_dependencies(web_repo: Path) -> None:
+    """对侧契约闸。web 仓的 audit 只保证「契约声明的在 web 侧存在」——删掉一条
+    契约条目 web audit 照样绿，壳会在某次运行时同步后静默失效。这里从安卓侧反查：
+    ① 桥 import 的每个 (模块, 符号) 必须已登记；② 契约 export 必须真被桥 import；
+    ③ 消费方用到的每个 web DOM selector 必须被契约覆盖；④ 契约 selector 必须真有
+    消费者。契约文件＝web 仓 native-contract.json。"""
+    contract_path = web_repo / "native-contract.json"
+    raw = read(contract_path)
+    if not raw:
+        fail(f"web 仓契约文件缺失：{contract_path}")
+        return
+    try:
+        contract = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        fail(f"native-contract.json 不是合法 JSON：{exc}")
+        return
+
+    bridge = read(BRIDGE)
+    if not bridge:
+        return  # 桥缺失由 audit_bridge_uses_real_modules 报，不重复
+    imported: dict[str, set[str]] = {}
+    for symbols, module in re.findall(
+        r"import\s*\{([^}]*)\}\s*from\s*'\.\./app/src/([\w.]+)'", bridge, re.S
+    ):
+        imported.setdefault(f"src/{module}", set()).update(
+            s.strip() for s in symbols.split(",") if s.strip()
+        )
+
+    declared = contract.get("modules", {})
+    for mod in sorted(set(imported) | set(declared)):
+        got = imported.get(mod, set())
+        want = set(declared.get(mod, {}).get("exports", []))
+        for sym in sorted(got - want):
+            fail(f"桥从 {mod} import 了 {sym}，native-contract.json 未登记"
+                 "——先在 web 仓登记契约，再同步运行时")
+        for sym in sorted(want - got):
+            fail(f"native-contract.json 声明的 {mod}:{sym} 没有任何桥 import（死条目）"
+                 "——从契约删掉，或补上消费方")
+
+    used: list[str] = []
+    for path in CONTRACT_SELECTOR_CONSUMERS:
+        text = read(path)
+        if not text:
+            fail(f"{path.relative_to(ROOT)} 缺失——契约 selector 消费者清单需要它")
+            continue
+        used += ["#" + m for m in re.findall(r"getElementById\('([^']+)'", text)]
+        used += re.findall(r"(?:querySelector(?:All)?|textContent)\('([^']+)'", text)
+    selectors = [str(s) for s in contract.get("selectors", [])]
+    for u in sorted(set(used)):
+        if not any(_sel_covers(_norm_sel(u), _norm_sel(c)) for c in selectors):
+            fail(f"消费方使用了未登记的 web selector {u!r}——先在 web 仓登记契约")
+    for c in selectors:
+        if not any(_sel_covers(_norm_sel(c), _norm_sel(u)) for u in used):
+            fail(f"契约 selector {c!r} 在安卓侧没有任何消费者（死条目）——从契约删掉，或补上消费方")
+
+
 def png_size(path: Path) -> tuple[int, int]:
     import struct
     with path.open("rb") as f:
@@ -199,6 +277,7 @@ def main() -> int:
     audit_privacy_and_runtime()
     audit_native_has_no_business_logic()
     audit_bridge_uses_real_modules()
+    audit_contract_covers_dependencies(Path(args.web_repo).resolve())
     audit_strings_parity()
     audit_store_assets()
     if errors:
