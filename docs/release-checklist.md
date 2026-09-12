@@ -6,7 +6,7 @@
 >
 > | 项 | 状态 |
 > |---|---|
-> | 发布产物能不能出 | **能**。`./gradlew bundleRelease assembleRelease` 通过，产出 `app-release.aab`（2.09 MB）与 `app-release.apk`（2.10 MB），包名 `org.eigentime.timelogger`、versionName `93.1`、标签 `Eigentime`/`时间尺`。**但签的是 debug 回退密钥，不可上传**——真上传前必须配 `keystore.properties` 重签 |
+> | 发布产物能不能出 | 2026-08-22 实测**能**（`app-release.aab` 2.09 MB / `app-release.apk` 2.10 MB，versionName `93.1`），**但当时签的是 debug 回退密钥，不可上传**。**2026-09-12 起 release 已改 fail-closed**：缺 `keystore.properties`（或字段空白/密钥文件不存在）时 Release 任务直接失败，不再产出 debug 签名的假产物——下表那次的「能出」在今天的代码上不会发生，出包前先配好 §2 的密钥 |
 > | 隐私政策 | **已上线**。中英两版第 6 节「Android 应用 / Android app」，`time.eigentime.org/privacy/` 已 curl 复核 |
 > | 商店图标 512×512 | **已做**：`docs/store/icon-512.png`（直接用运行时那张 512，品牌逐字节一致） |
 > | 特征图 1024×500 | **已做**：`docs/store/feature-1024x500.png`（只有品牌 + 两行事实描述，无排名/促销字样） |
@@ -140,16 +140,26 @@ python3 scripts/device_check.py --serial <设备>   # release 包也要过一遍
 安卓仓此前没有 tag 与 release 流程，版本锚点全靠 `android_revision.txt` + 同步脚本，
 改错了不会有任何检查发红——这是当前最脆的一环。固定流程：
 
-1. `python3 scripts/sync_runtime.py`（把上游版本与 commit 写进 `app/version.properties`）
+1. `python3 scripts/sync_runtime.py --release`（发版预检：web 仓 clean、commit 可解析、版本三段式、契约有效，全过才写 `app/version.properties` 与资产；日常开发同步用不带 `--release` 的普通模式）
 2. 跑满自测（§5 那一串）
-3. `./gradlew bundleRelease assembleRelease`
+3. `./gradlew bundleRelease assembleRelease`（缺 `keystore.properties` 时任务图守卫直接失败——不会再出 debug 签名的假产物）
 4. 打 tag：`git tag a<web版本>.<revision>`（web 仓 1.0.0 起是三段式 semver，例如 `a1.0.0.1`；与 web 仓的 `v1.0.0` tag 区分开）
 5. `git push origin main --tags`
 6. 建 GitHub Release，标题同 tag，**附上 `app-release.apk`**——这就是「免费构建随手可得」
    那句承诺的兑现方式（D28）
 7. Release notes 三段：用户影响、内部治理、验证结果；不贴真实数据或截图
 
-## 6. 明确不做
+## 6. versionCode 方案（2026-09-12 定案）
+
+**取 web semver 派生**：`versionCode = major*10_000_000 + minor*100_000 + patch*1_000 + revision`
+（`1.0.0.1` = 10_001_001，大于旧单整数方案产生过的 9301，跨格式不回退；编码上界 minor/patch ≤ 99、
+revision ≤ 999 由 android `project_audit.py` 锁住，防跨字段进位撞码）。
+
+**否决** `app/release.properties` 显式计数器方案（v1.0.0 预写条目曾设想）：需要额外出一个状态文件、
+自己维护单调性，而 semver 派生零状态、可复算、天然随上游版本走——定案后不再两案并存。
+变更只能走 `android_revision.txt` +1（同 web 版本的壳修订）或 web 版本号升级。
+
+## 7. 明确不做
 
 - 不做订阅、不做内购、不做「解锁高级功能」、不做付费上架——那会真的推翻 D7/D28。
 - 应用内不放支付界面（连「去支持」按钮都不放支付流程，只放指向网站的普通链接）。

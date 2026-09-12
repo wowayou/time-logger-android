@@ -60,6 +60,9 @@ android {
         release {
             isMinifyEnabled = false
             isShrinkResources = false
+            // 配置期保持宽容（help / assembleDebug 不能被卡）；真正的 fail-closed
+            // 守卫在文件末尾的任务图就绪检查里——只有真的请求了 Release 任务才
+            // 要求上传密钥。这里的回退分支因此对 Release 任务不可达。
             val ksConfigured = rootProject.file("keystore.properties").exists()
             signingConfig = if (ksConfigured) signingConfigs.getByName("release")
             else signingConfigs.getByName("debug")
@@ -112,4 +115,31 @@ val assertRuntimeSynced by tasks.registering {
 }
 tasks.matching { it.name.startsWith("merge") && it.name.endsWith("Assets") }.configureEach {
     dependsOn(assertRuntimeSynced)
+}
+
+// fail-closed 签名守卫（v1.0.0 计划项，2026-09-12 落地）：release 产物必须用上传
+// 密钥签名。缺 keystore.properties 时配置期的回退分支会选 debug——那会产出一次
+// 「成功」却永远无法上架、且与已分发包签名不同的产物。守卫挂在任务图就绪时：
+// 只有真的请求了 Release 任务（assemble/bundle/package/validateSigning…Release）
+// 才要求密钥，help / assembleDebug / 真机自测的 debug 变体不受影响。
+// 消息里的「拒绝静默回退」是 android project_audit 的结构锚点，改动需同步。
+gradle.taskGraph.whenReady {
+    if (allTasks.none { it.name.contains("Release") }) return@whenReady
+    val ksFile = rootProject.file("keystore.properties")
+    if (!ksFile.exists()) {
+        throw GradleException(
+            "release 构建拒绝静默回退 debug 签名：找不到 keystore.properties。" +
+                "上架产物必须用上传密钥（docs/release-checklist.md §签名密钥）；" +
+                "本地侧载与自测请走 assembleDebug（.debug 应用ID，不污染上架包）。"
+        )
+    }
+    val ks = Properties().apply { ksFile.inputStream().use { load(it) } }
+    for (field in listOf("storeFile", "storePassword", "keyAlias", "keyPassword")) {
+        if (ks.getProperty(field).isNullOrBlank()) {
+            throw GradleException("keystore.properties 缺字段或为空：$field")
+        }
+    }
+    if (!rootProject.file(ks.getProperty("storeFile")).exists()) {
+        throw GradleException("keystore.properties 的 storeFile 指向的密钥文件不存在")
+    }
 }

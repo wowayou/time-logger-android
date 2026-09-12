@@ -259,6 +259,20 @@ def audit_contract_covers_dependencies(web_repo: Path) -> None:
             fail(f"契约 selector {c!r} 在安卓侧没有任何消费者（死条目）——从契约删掉，或补上消费方")
 
 
+def audit_release_signing_fail_closed() -> None:
+    """v1.0.0 计划项：release 构建不得在缺 keystore.properties 时静默回退 debug
+    签名——那会产出一次「成功」却永远无法上架、且与已分发包签名不同的产物。
+    守卫在 build.gradle.kts 的任务图就绪检查里；「拒绝静默回退」是结构锚点，
+    被挪走即守卫被拆。"""
+    text = read(ROOT / "app" / "build.gradle.kts")
+    if "拒绝静默回退" not in text:
+        fail("build.gradle.kts 缺 fail-closed 签名守卫（「拒绝静默回退」锚点不在）——"
+             "缺 keystore.properties 时 Release 任务必须失败，而不是产出 debug 签名产物")
+    if 'whenReady' not in text or 'name.contains("Release")' not in text:
+        fail("build.gradle.kts 的签名守卫未挂在任务图就绪且未按 Release 任务名限定——"
+             "会误伤 help/assembleDebug 或对 Release 任务失效")
+
+
 def png_size(path: Path) -> tuple[int, int]:
     import struct
     with path.open("rb") as f:
@@ -322,6 +336,7 @@ def main() -> int:
     audit_native_has_no_business_logic()
     audit_bridge_uses_real_modules()
     audit_contract_covers_dependencies(Path(args.web_repo).resolve())
+    audit_release_signing_fail_closed()
     audit_strings_parity()
     audit_store_assets()
     if errors:
