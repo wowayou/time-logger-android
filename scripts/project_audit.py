@@ -59,6 +59,22 @@ def audit_version_anchors(web_repo: Path) -> None:
     if values.get("android.revision") != revision:
         fail("version.properties 的 android.revision 与 app/android_revision.txt 不一致"
              f"（{values.get('android.revision')!r} vs {revision!r}）——重跑 sync_runtime.py")
+    # versionCode 编码（build.gradle.kts）：major*10_000_000 + minor*100_000 +
+    # patch*1_000 + revision。每个字段的字面值必须小于它的位权，否则跨字段进位
+    # 会让两个不同版本撞出同一个 versionCode（如 patch=100 撞 minor=1、patch=0），
+    # 到 Play 上传才会被拒——在这里提前拦住，出路是扩位权而不是继续 bump。
+    parts = (values.get("web.version") or "").split(".")
+    try:
+        minor, patch = int(parts[1]), int(parts[2])
+    except (IndexError, ValueError):
+        fail(f"version.properties 的 web.version 不是三段式 semver："
+             f"{values.get('web.version')!r}——重跑 sync_runtime.py")
+    else:
+        if minor > 99 or patch > 99:
+            fail(f"web 版本 minor={minor}/patch={patch} 超出 versionCode 编码上界（99）"
+                 "——先扩 build.gradle.kts 的位权再 bump")
+    if int(revision) > 999:
+        fail(f"android revision {revision} 超出 versionCode 编码上界（999）——扩位权")
     web_manifest = web_repo / "manifest.webmanifest"
     if web_manifest.exists():
         web_version = str(json.loads(read(web_manifest)).get("version", "")).strip()
@@ -138,10 +154,18 @@ def audit_bridge_uses_real_modules() -> None:
 
 
 # 契约 selector 的安卓侧消费者（web 运行时 DOM）。新消费方出现时登记到这里。
+# 提取覆盖的调用形态（单双引号均可）：getElementById(...)、querySelector(All)(...)、
+# textContent(...)、waitForSelector(...)，以及 classList.contains(...) 的裸 class 名
+# （按「契约里存在含该 class 的 selector」判覆盖）。**新形态出现时必须同步扩展这里**，
+# 否则该依赖会静默绕过契约闸——审查发现的 body.app-ready 漏网（waitForSelector
+# 形态不认识）即属此类，修复于 2026-09-12。
 CONTRACT_SELECTOR_CONSUMERS = (
     ROOT / "app/src/main/kotlin/org/eigentime/timelogger/MainActivity.kt",
     ROOT / "scripts/shell_browser_check.mjs",
 )
+
+# class 名字符集（CSS 语法），用于裸 class 与契约 selector 的 class 段互认。
+_CLASS_CHARS = "a-zA-Z0-9_-"
 
 
 def _norm_sel(s: str) -> str:
@@ -157,6 +181,11 @@ def _sel_covers(a: str, b: str) -> bool:
     if not long.startswith(short):
         return False
     return len(short) == len(long) or long[len(short)] in " .>[]:#"
+
+
+def _class_covered(cls: str, selectors: list[str]) -> bool:
+    """裸 class 名是否被某个契约 selector 的 class 段覆盖（.cls 且后随非 class 字符）。"""
+    return any(re.search(r"\." + re.escape(cls) + rf"(?![{_CLASS_CHARS}])", c) for c in selectors)
 
 
 def audit_contract_covers_dependencies(web_repo: Path) -> None:
@@ -199,17 +228,32 @@ def audit_contract_covers_dependencies(web_repo: Path) -> None:
                  "——从契约删掉，或补上消费方")
 
     used: list[str] = []
+    used_classes: list[str] = []
     for path in CONTRACT_SELECTOR_CONSUMERS:
         text = read(path)
         if not text:
             fail(f"{path.relative_to(ROOT)} 缺失——契约 selector 消费者清单需要它")
             continue
-        used += ["#" + m for m in re.findall(r"getElementById\('([^']+)'", text)]
-        used += re.findall(r"(?:querySelector(?:All)?|textContent)\('([^']+)'", text)
+        # 单双引号各写一条模式，且只要求引号闭合、不要求紧跟右括号——waitForSelector
+        # 的实参后跟 ', {…}'，Kotlin 拼接的实参后跟 ' + tag…'。也别用
+        # (['"])([^'"]+)\1 一条搞定：单引号字符串里合法地含双引号
+        # （querySelector('#form-chips .chip[data-tag="' + …）,[^'"] 会把它拦腰截断，
+        # 第一版就栽在这里，两个 selector 全部漏提取。
+        for pat in (r"getElementById\('([^']+)'", r'getElementById\("([^"]+)"'):
+            used += ["#" + m for m in re.findall(pat, text)]
+        for pat in (r"(?:querySelector(?:All)?|textContent|waitForSelector)\('([^']+)'",
+                    r'(?:querySelector(?:All)?|textContent|waitForSelector)\("([^"]+)"'):
+            used += re.findall(pat, text)
+        for pat in (r"classList\.contains\('([^']+)'", r'classList\.contains\("([^"]+)"'):
+            used_classes += re.findall(pat, text)
     selectors = [str(s) for s in contract.get("selectors", [])]
     for u in sorted(set(used)):
         if not any(_sel_covers(_norm_sel(u), _norm_sel(c)) for c in selectors):
             fail(f"消费方使用了未登记的 web selector {u!r}——先在 web 仓登记契约")
+    for cls in sorted(set(used_classes)):
+        if not _class_covered(cls, selectors):
+            fail(f"消费方等待的 body class {cls!r} 未被任何契约 selector 的 class 段覆盖"
+                 "——先在 web 仓登记契约")
     for c in selectors:
         if not any(_sel_covers(_norm_sel(c), _norm_sel(u)) for u in used):
             fail(f"契约 selector {c!r} 在安卓侧没有任何消费者（死条目）——从契约删掉，或补上消费方")
