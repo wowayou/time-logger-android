@@ -31,7 +31,7 @@
    也不得为阻止免费流通做许可校验或联网激活（AGPL + web 仓 D28）。金钱入口只能是
    网站上的自愿支持，且必须写明「不购买任何东西」。应用内、README、商店文案三处的
    「开源 + 免费」声明不得删除或弱化；应用内不放支付界面。
-9. **发版必须走仪式**：sync → 自测 → `bundleRelease` → tag `a<web版本>.<revision>` →
+9. **发版必须走仪式**：`sync_runtime.py --release`（预检：web 仓 clean/commit/版本/契约）→ 自测 → `bundleRelease`（fail-closed：缺 `keystore.properties` 直接失败）→ tag `a<web版本>.<revision>` →
    push tags → GitHub Release **并附 APK**（免费构建随手可得是 D28 的承诺，不是可选项）。
    步骤见 `docs/release-checklist.md` §5.6。
 10. 版本号只能从 web 版本派生（`sync_runtime.py` 写 `app/version.properties`），
