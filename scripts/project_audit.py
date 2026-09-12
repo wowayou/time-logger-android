@@ -268,9 +268,10 @@ def audit_release_signing_fail_closed() -> None:
     if "拒绝静默回退" not in text:
         fail("build.gradle.kts 缺 fail-closed 签名守卫（「拒绝静默回退」锚点不在）——"
              "缺 keystore.properties 时 Release 任务必须失败，而不是产出 debug 签名产物")
-    if 'whenReady' not in text or 'name.contains("Release")' not in text:
-        fail("build.gradle.kts 的签名守卫未挂在任务图就绪且未按 Release 任务名限定——"
-             "会误伤 help/assembleDebug 或对 Release 任务失效")
+    if 'whenReady' not in text or '"packageRelease"' not in text or 'validateSigningRelease' not in text:
+        fail("build.gradle.kts 的签名守卫未挂在任务图就绪、或触发面未收窄到签名产物任务"
+             "（packageRelease/packageReleaseBundle/validateSigningRelease）——"
+             "按名字含 Release 拦会误伤 testReleaseUnitTest，日常自测在无密钥机器上跑不了")
 
 
 def png_size(path: Path) -> tuple[int, int]:

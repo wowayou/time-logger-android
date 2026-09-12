@@ -119,12 +119,17 @@ tasks.matching { it.name.startsWith("merge") && it.name.endsWith("Assets") }.con
 
 // fail-closed 签名守卫（v1.0.0 计划项，2026-09-12 落地）：release 产物必须用上传
 // 密钥签名。缺 keystore.properties 时配置期的回退分支会选 debug——那会产出一次
-// 「成功」却永远无法上架、且与已分发包签名不同的产物。守卫挂在任务图就绪时：
-// 只有真的请求了 Release 任务（assemble/bundle/package/validateSigning…Release）
-// 才要求密钥，help / assembleDebug / 真机自测的 debug 变体不受影响。
-// 消息里的「拒绝静默回退」是 android project_audit 的结构锚点，改动需同步。
+// 「成功」却永远无法上架、且与已分发包签名不同的产物。守卫挂在任务图就绪时，
+// 触发面收窄到**真正产出或校验签名产物**的任务（packageRelease / packageReleaseBundle /
+// validateSigningRelease；assembleRelease / bundleRelease 的任务图必然包含前两者）——
+// 不能用名字含 "Release" 就拦：testReleaseUnitTest / compileReleaseKotlin 不产任何
+// 签名产物，误伤它们会让文档规定的日常自测（`./gradlew test assembleDebug`）在
+// 无密钥的开发机上永远跑不了（P35 红灯抓过这次误伤）。help / assembleDebug /
+// debug 变体不受影响。消息里的「拒绝静默回退」是 android project_audit 的结构
+// 锚点，改动需同步。
 gradle.taskGraph.whenReady {
-    if (allTasks.none { it.name.contains("Release") }) return@whenReady
+    val signingArtifactTasks = setOf("packageRelease", "packageReleaseBundle", "validateSigningRelease")
+    if (allTasks.none { it.name in signingArtifactTasks }) return@whenReady
     val ksFile = rootProject.file("keystore.properties")
     if (!ksFile.exists()) {
         throw GradleException(
